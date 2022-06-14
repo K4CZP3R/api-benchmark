@@ -26,5 +26,3 @@ export function generateKeyPair(): { publicKey: string; privateKey: string } {
 		privateKey: privateKey,
 	};
 }
-
-generateKeyPair();

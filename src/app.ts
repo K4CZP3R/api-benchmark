@@ -3,20 +3,16 @@ import helmet from "helmet";
 import cors from "cors";
 
 import { IController } from "./models/interfaces/controller.interface";
-import { errorMiddleware } from "./middlewares/error.middleware";
-import { DependencyProviderService } from "./services/dependency-provider.service";
-import { JWT_SERVICE } from "./helpers/di-names.helper";
 import { getEnvironment } from "./helpers/dotenv.helper";
-import { createMongooseConnection } from "./services/mongoose-connection.service";
-import { configToMongoUrl } from "./helpers/mongo.helper";
-import { JwtSessionService } from "./services/jwt-session.service";
+
 import { Environment } from "./models/environment.model";
-import { AuthController } from "./controllers/auth.controller";
+import { LoadController } from "./controllers/load.controller";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 export class App {
 	public app: express.Express;
 
-	private controllers: IController[] = [new AuthController()];
+	private controllers: IController[] = [new LoadController()];
 
 	constructor() {
 		this.app = express();
@@ -33,28 +29,12 @@ export class App {
 	private async bootstrapApp() {
 		const env = getEnvironment();
 		this.setupDi(env);
-		if (env.isDev()) await this.seedDatabaseInDev();
 		this.setupMiddlewares();
 		this.setupControllers();
 		this.setupAfterMiddlewares();
 	}
 
-	private setupDi(env: Environment) {
-		let keypair = env.getJwkKeyPair();
-		DependencyProviderService.setImpl<JwtSessionService>(
-			JWT_SERVICE,
-			new JwtSessionService({
-				privateJwk: keypair.private,
-				publicJwk: keypair.public,
-				// expiresIn: 60 * 60 * 24,
-				expiresIn: 60 * 15, // 15 minutes
-				refreshExpiresIn: 60 * 60 * 24 * 7, // 7 days
-				issuer: "KSP",
-			})
-		);
-
-		createMongooseConnection(configToMongoUrl(env.getDatabase()));
-	}
+	private setupDi(env: Environment) {}
 
 	private setupMiddlewares() {
 		this.app.use(helmet());
@@ -70,9 +50,5 @@ export class App {
 
 	private setupAfterMiddlewares() {
 		this.app.use(errorMiddleware);
-	}
-
-	private async seedDatabaseInDev() {
-		/* Define repos and seed here */
 	}
 }
