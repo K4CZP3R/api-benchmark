@@ -11,4 +11,4 @@ COPY . .
 
 RUN npm run build
 
-CMD [ "ENVIRONMENT=production","node", "dist/index.js" ]
+CMD [ "node", "dist/index.js" ]
